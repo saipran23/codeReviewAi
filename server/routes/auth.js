@@ -5,7 +5,7 @@ import { rateLimit } from "express-rate-limit";
 import jwt from "jsonwebtoken";
 import crypto from "crypto";
 
-import { User } from "../models/index.js";
+import client from "../config/database.js";
 import { requireAuth } from "../middleware/auth.js";
 
 const router = express.Router();
@@ -94,6 +94,8 @@ router.get("/callback", async (req, res) => {
       return res.status(401).json({ error: "GitHub token exchange failed" });
     }
 
+    console.log(tokenResponse.data);
+
     const githubAccessToken = tokenResponse.data.access_token;
     const userResponse = await axios.get("https://api.github.com/user", {
       headers: {
@@ -119,14 +121,33 @@ router.get("/callback", async (req, res) => {
     const email =
       user.email || primaryEmail || `${user.login}@users.noreply.github.com`;
 
-    await User.upsert({
-      githubId: String(user.id),
-      username: user.login,
-      email,
-      accessToken: githubAccessToken,
-    });
+    await client.query(
+      `
+  INSERT INTO users (
+    github_id,
+    username,
+    email,
+    access_token,
+    avatar_url
+  )
+  VALUES ($1, $2, $3, $4, $5)
+  ON CONFLICT (github_id)
+  DO UPDATE SET
+    username = EXCLUDED.username,
+    email = EXCLUDED.email,
+    access_token = EXCLUDED.access_token,
+    avatar_url = EXCLUDED.avatar_url
+  RETURNING *;
+  `,
+      [String(user.id), user.login, email, githubAccessToken, user.avatar_url],
+    );
 
-    const dbUser = await User.findOne({ where: { githubId: String(user.id) } });
+    const result = await client.query(
+      `SELECT * FROM users WHERE github_id = $1`,
+      [String(user.id)],
+    );
+
+    const dbUser = result.rows[0];
     if (!dbUser) {
       return res.status(500).json({ error: "Failed to persist user profile" });
     }
@@ -137,12 +158,19 @@ router.get("/callback", async (req, res) => {
       avatar_url: user.avatar_url || null,
       html_url: user.html_url || null,
     });
-    const redirectUrl = new URL(getFrontendUrl());
-    redirectUrl.searchParams.set("token", appToken);
+    // const redirectUrl = new URL(getFrontendUrl());
+    // redirectUrl.searchParams.set("token", appToken);
 
-    console.log("Redirecting to:", redirectUrl.toString());
+    // console.log("Redirecting to:", redirectUrl.toString());
 
-    return res.redirect(redirectUrl.toString());
+    // return res.redirect(redirectUrl.toString());
+    return res.json({
+      token: appToken,
+      user: {
+        id: dbUser.id,
+        username: dbUser.username,
+      },
+    });
   } catch (error) {
     if (
       error.name === "JsonWebTokenError" ||
@@ -154,6 +182,8 @@ router.get("/callback", async (req, res) => {
     return res.status(500).json({ error: "GitHub OAuth callback failed" });
   }
 });
+
+
 
 router.get("/me", requireAuth, (req, res) => {
   return res.json({
