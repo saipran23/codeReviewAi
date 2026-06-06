@@ -2,87 +2,158 @@ import React from "react";
 import client from "../config/database";
 import { requireAuth } from "../middleware/auth";
 import reviewCode from "../services/aiService";
-import {parseDiff, formatForAI} from "../services/diffParser";
-import {fetchPRDiff, getUserRepos} from "../services/githubService";1
+import { parseDiff, formatForAI } from "../services/diffParser";
+import { fetchPRDiff, getUserRepos } from "../services/githubService";
+1;
 
 const router = express.Router();
 
+router.post("/", requireAuth, async (req, res) => {
+  const { pr_url } = req.body;
 
-router.post("/", requireAuth, (req, res) => {
+  if (!pr_url) res.status(400).json({ error: "PR Url requried" });
 
-    const {pr_url} = req.body;
+  try {
+    const result = await client.query(
+      "INSERT INTO reviews (user_id,pr_url, status) VALUES ($1, $2, $3) RETURNING id",
+      [req.userId, pr_url, "processing"],
+    );
 
-    if(!pr_url) res.status(400).json({error : 'PR Url requried'});
+    const reviewId = result.rows[0].id;
 
-    try{
+    res.json({ review_id: reviewId, status: "processing" });
 
-        const result = await client.query(
-            'INSERT INTO reviews (user_id,pr_url, status) VALUES ($1, $2, $3) RETURNING id', 
-            [req.userId,  pr_url, 'processing']
+    setImmediate(async () => {
+      try {
+        const userResult = await client.query(
+          `SELECT access_token FROM users WHERE id =  $1 `,
+          [req.userId],
         );
 
-        const reviewId = result.rows[0].id;
+        const access_token = userResult.rows[0].access_token;
 
-        res.json({review_id: reviewId, status: 'processing'});
+        const { diff, repoName } = fetchPRDiff(pr_url, access_token);
+        const parseDiff = parseDiff(PRDiff);
 
-        setImmediate(async ()=>{
+        const formattedDiff = formatForAI(parseDiff);
 
-            try{
+        const comments = await reviewCode(formattedDiff);
 
-                const userResult = await client.query(
-                    `SELECT access_token FROM users WHERE id =  $1 `,
-                    [req.userId]
-                );
+        for (const comment of comments) {
+          await db.query(
+            "INSERT INTO review_comments (review_id, file_name, line_number, category, severity, message) VALUES ($1,$2,$3,$4,$5,$6)",
+            [
+              reviewId,
+              comment.file_name,
+              comment.line_number,
+              comment.category,
+              comment.severity,
+              comment.message,
+            ],
+          );
+        }
 
-                const access_token = userResult.rows[0].access_token;
+        await db.query(
+          "UPDATE reviews SET status=$1, repo_name=$2, completed_at=NOW() WHERE id=$3",
+          ["completed", repoName, reviewId],
+        );
+      } catch (error) {
+        console.error("AI review failed:", err);
+        await db.query("UPDATE reviews SET status=$1 WHERE id=$2", [
+          "failed",
+          reviewId,
+        ]);
+      }
+    });
+  } catch (error) {
+    console.error(err);
 
-                const {diff, repoName } = fetchPRDiff(pr_url, access_token);
-                const parseDiff = parseDiff(PRDiff);
-
-                const formattedDiff = formatForAI(parseDiff);
-
-                const comments =  await reviewCode(formattedDiff);
-
-                for (const comment of comments) {
-                    await db.query(
-                        'INSERT INTO review_comments (review_id, file_name, line_number, category, severity, message) VALUES ($1,$2,$3,$4,$5,$6)',
-                        [
-                        reviewId,
-                        comment.file_name,
-                        comment.line_number,
-                        comment.category,
-                        comment.severity,
-                        comment.message
-                        ]
-                    );
-                }
-
-                await db.query(
-                    'UPDATE reviews SET status=$1, repo_name=$2, completed_at=NOW() WHERE id=$3',
-                    ['completed', repoName, reviewId]
-                );
-
-
-            }catch(error){
-                console.error('AI review failed:', err);
-                await db.query(
-                    'UPDATE reviews SET status=$1 WHERE id=$2',
-                    ['failed', reviewId]
-                );
-
-            }
-        })
-
-
-    }catch(error){
-         console.error(err);
-
-        res.status(500).json({
-            error: 'Failed to create review'
-        });
-    }
-
+    res.status(500).json({
+      error: "Failed to create review",
+    });
+  }
 });
 
+router.get("/", requireAuth, async (req, res) => {
+  try {
+    const result = await client.query(
+      "SELECT * FROM reviews WHERE user_id = $1 ORDER BY created_at DESC",
+      [req.userId],
+    );
+
+    res.json(result.rows);
+  } catch (error) {
+    console.error(err);
+
+    res.status(500).json({
+      error: "Failed to fetch review",
+    });
+  }
+});
+
+router.get("/:id", requireAuth, async (req, res) => {
+  const reviewId = req.params.id;
+  try {
+    const result = await client.query(
+      "SELECT * FROM reviews WHERE user_id = $1 AND id = $2",
+      [req.userId, reviewId],
+    );
+
+    if (!result.rows.length)
+      return res.status(404).json({ error: "not found" });
+
+    res.json(result.rows[0]);
+  } catch (error) {
+    console.error(err);
+
+    res.status(500).json({
+      error: `Failed to fetch ${reviewId} review`,
+    });
+  }
+});
+
+router.get("/:id/comments", requireAuth, async (req, res) => {
+  const reviewId = req.params.id;
+  try {
+    const response = await client.query(
+      "SELECT * FROM reviews WHERE user_id = $1 AND id = $2",
+      [req.userId, reviewId],
+    );
+
+    if (!response.rows.length)
+      return res.status(404).json({ error: "not found" });
+
+    const result = await client.query(
+      "SELECT * FROM review_comments WHERE review_id = $1 ORDER BY severity, line_number",
+      [reviewId],
+    );
+
+    res.json(result.rows[0]);
+  } catch (error) {
+    console.error(err);
+
+    res.status(500).json({
+      error: `Failed to fetch ${reviewId} review comments`,
+    });
+  }
+});
+
+router.delete("/:id", requireAuth, async (req, res) => {
+  const reviewId = req.params.id;
+  try {
+    await db.query(`DELECT FROM reviews WHERE user_id = $1 AND id = $2`, [
+      req.userId,
+      reviewId,
+    ]);
+
+    res.json({ message: "Deleted" });
+  } catch (error) {
+    console.error(err);
+
+    res.status(500).json({
+      error: `Failed to delete ${reviewId} review`,
+    });
+  }
+});
 
 export default router;
