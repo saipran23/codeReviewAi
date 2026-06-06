@@ -185,14 +185,21 @@ router.get("/callback", async (req, res) => {
   }
 });
 
-
-
 router.get("/me", requireAuth, (req, res) => {
   return res.json({
     id: req.user.sub,
     username: req.user.username,
     avatar_url: req.user.avatar_url,
     profile_url: req.user.profile_url,
+  });
+});
+
+router.post("/logout", (req, res) => {
+  res.clearCookie("token");
+
+  res.status(200).json({
+    success: true,
+    message: "Logged out successfully",
   });
 });
 

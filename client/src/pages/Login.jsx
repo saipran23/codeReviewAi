@@ -18,7 +18,7 @@ function Login() {
                     <h1>PRReview.ai</h1>
                 </div>
 
-                <h3 className="login-subtitle">
+                <h3 className="login-subtitle" oncl>
                     Sign in to continue
                 </h3>
 

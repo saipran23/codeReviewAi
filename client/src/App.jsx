@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import Login from './pages/Login';
 import Navbar from './components/Navbar';
 import Home from './pages/Home';
+import LandingPage from './pages/Landingpage';
 
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 
@@ -29,6 +30,7 @@ function App() {
       <Navbar />
 
       <Routes>
+        <Route path="/landing" element={<LandingPage />} />
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
       </Routes>

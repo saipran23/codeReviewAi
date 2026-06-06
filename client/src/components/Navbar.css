@@ -1,3 +1,13 @@
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  padding: 16px 32px;
+  border-bottom: 1px solid #e5e7eb;
+  background: #18181b;
+}
+
 .nav-brand {
   display: flex;
   align-content: center;
@@ -5,9 +15,75 @@
   gap: 10px;
 }
 
+.nav-brand h1 {
+  margin: 0;
+  color: #fff;
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
 .logo-dot {
-  width: 10px;
-  height: 10px;
+  width: 12px;
+  height: 12px;
   border-radius: 50%;
   background: #8b5cf6;
+}
+
+.nav-button {
+  padding: 10px 18px;
+  border: none;
+  border-radius: 8px;
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.username {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  font-size: 1rem;
+  color: #fff;
+}
+
+.dropdown-btn {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+}
+
+.dropdown-btn svg {
+  width: 18px;
+  height: 18px;
+  fill: #fff;
+}
+
+.dropdown-menu {
+  background-color: #fff;
+  position: absolute;
+
+  top: 45px;
+  right: 0;
+
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+
+  min-width: 120px;
+
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.dropdown-menu button {
+  margin: 0;
+  padding: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  border-radius: 8px;
+  max-width: 120px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }

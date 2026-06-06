@@ -66,6 +66,7 @@ async function fetchPRDiff(prUrl, accessToken) {
     handleGitHubError(error);
   }
 }
+
 async function getUserRepos(accessToken) {
   try {
     const response = await axios.get(`${gitUrl}/user/repos`, {
@@ -86,3 +87,5 @@ async function getUserRepos(accessToken) {
     handleGitHubError(error);
   }
 }
+
+export {fetchPRDiff, getUserRepos};
