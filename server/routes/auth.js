@@ -158,19 +158,21 @@ router.get("/callback", async (req, res) => {
       avatar_url: user.avatar_url || null,
       html_url: user.html_url || null,
     });
-    // const redirectUrl = new URL(getFrontendUrl());
-    // redirectUrl.searchParams.set("token", appToken);
+    const redirectUrl = new URL(getFrontendUrl());
+    redirectUrl.searchParams.set("token", appToken);
 
-    // console.log("Redirecting to:", redirectUrl.toString());
+    console.log(appToken);
 
-    // return res.redirect(redirectUrl.toString());
-    return res.json({
-      token: appToken,
-      user: {
-        id: dbUser.id,
-        username: dbUser.username,
-      },
-    });
+    console.log("Redirecting to:", redirectUrl.toString());
+
+    return res.redirect(redirectUrl.toString());
+    // return res.json({
+    //   token: appToken,
+    //   user: {
+    //     id: dbUser.id,
+    //     username: dbUser.username,
+    //   },
+    // });
   } catch (error) {
     if (
       error.name === "JsonWebTokenError" ||

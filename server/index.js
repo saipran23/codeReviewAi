@@ -1,7 +1,7 @@
 import dotenv from "dotenv";
 dotenv.config();
 import client from "./config/database.js";
-
+import cors from "cors";
 import express from "express";
 
 import authRoutes from "./routes/auth.js";
@@ -12,9 +12,13 @@ app.use(express.json());
 
 const PORT = process.env.PORT || 3000;
 
-app.get("/health", (req, res) => {
-  res.json({ status: "ok" });
-});
+app.use(cors({
+    origin: [
+        "http://localhost:5173",
+        "http://localhost:3000"
+    ],
+    credentials: true
+}));
 
 app.use("/api/auth", authRoutes);
 

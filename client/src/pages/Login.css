@@ -1,0 +1,80 @@
+.login-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  align-content: center;
+  min-height: 100vh;
+  background: #18181b;
+  font-family: Inter, sans-serif;
+}
+
+.login-card {
+  width: 450px;
+  padding: 40px;
+  border-radius: 20px;
+  background: #2a2a2a;
+  border: 1px solid #3a3a3a;
+  text-align: center;
+}
+
+.login-brand {
+  display: flex;
+  align-content: center;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.logo-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #8b5cf6;
+}
+
+.login-brand h1 {
+  color: #fff;
+  font-size: 2rem;
+  font-weight: 700;
+}
+
+.login-subtitle {
+  margin-top: 10px;
+  color: #b3b3b3;
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+.login-button {
+  width: 100%;
+  margin-top: 32px;
+  padding: 14px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+
+  background: transparent;
+    color: white;
+
+    border: 1px solid #22c55e;
+    border-radius: 12px;
+
+    font-size: 1rem;
+    font-weight: 600;
+
+    cursor: pointer;
+}
+
+.login-button svg {
+  width: 22px;
+  height: 22px;
+}
+
+.login-note {
+  margin-top: 20px;
+  color: #9ca3af;
+  font-size: 0.95rem;
+}

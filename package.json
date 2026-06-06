@@ -14,12 +14,15 @@
   "keywords": [],
   "dependencies": {
     "@sequelize/postgres": "^7.0.0-alpha.48",
-    "axios": "^1.16.1",
+    "axios": "^1.17.0",
+    "bootstrap": "^5.3.8",
+    "cors": "^2.8.6",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
     "express-rate-limit": "^8.5.2",
     "jsonwebtoken": "^9.0.3",
     "pg": "^8.21.0",
+    "react-router-dom": "^7.17.0",
     "sequelize": "^6.37.8"
   },
   "devDependencies": {
