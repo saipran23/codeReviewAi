@@ -1,13 +1,13 @@
-import { useState, useEffect } from 'react'
+import { useEffect } from 'react';
 import Login from './pages/Login';
 import Navbar from './components/Navbar';
 import Home from './pages/Home';
 import LandingPage from './pages/Landingpage';
+// import ReviewPage from '.';
 
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 
-
-import './App.css'
+import './App.css';
 
 function App() {
 
@@ -15,12 +15,8 @@ function App() {
     const params = new URLSearchParams(window.location.search);
     const token = params.get("token");
 
-    // console.log(token);
-
     if (token) {
       localStorage.setItem("authToken", token);
-
-      // remove token from URL
       window.history.replaceState({}, "", "/");
     }
   }, []);
@@ -33,9 +29,11 @@ function App() {
         <Route path="/landing" element={<LandingPage />} />
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
+
+        {/* <Route path="/review/:id" element={<ReviewPage />} /> */}
       </Routes>
     </BrowserRouter>
-  )
+  );
 }
 
-export default App
+export default App;

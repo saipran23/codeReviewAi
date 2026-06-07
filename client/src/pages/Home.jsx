@@ -1,5 +1,11 @@
+import ReviewForm from "../components/ReviewForm";
+
 function Home() {
-  return <h1>Welcome to PRReview.ai</h1>;
+    return (
+        <div>
+            <ReviewForm />
+        </div>
+    );
 }
 
 export default Home;

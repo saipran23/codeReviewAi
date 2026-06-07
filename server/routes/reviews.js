@@ -1,22 +1,21 @@
-import React from "react";
-import client from "../config/database";
-import { requireAuth } from "../middleware/auth";
-import reviewCode from "../services/aiService";
-import { parseDiff, formatForAI } from "../services/diffParser";
-import { fetchPRDiff, getUserRepos } from "../services/githubService";
-1;
+import client from "../config/database.js";
+import { requireAuth } from "../middleware/auth.js";
+import reviewCode from "../services/aiService.js";
+import { parseDiff, formatForAI } from "../services/diffParser.js";
+import { fetchPRDiff, getUserRepos } from "../services/githubService.js";
+import express from "express";
 
 const router = express.Router();
 
 router.post("/", requireAuth, async (req, res) => {
   const { pr_url } = req.body;
-
+  // console.log(pr_url);
   if (!pr_url) res.status(400).json({ error: "PR Url requried" });
 
   try {
     const result = await client.query(
       "INSERT INTO reviews (user_id,pr_url, status) VALUES ($1, $2, $3) RETURNING id",
-      [req.userId, pr_url, "processing"],
+      [req.user.sub, pr_url, "processing"],
     );
 
     const reviewId = result.rows[0].id;
@@ -27,20 +26,38 @@ router.post("/", requireAuth, async (req, res) => {
       try {
         const userResult = await client.query(
           `SELECT access_token FROM users WHERE id =  $1 `,
-          [req.userId],
+          [req.user.sub],
         );
 
         const access_token = userResult.rows[0].access_token;
 
-        const { diff, repoName } = fetchPRDiff(pr_url, access_token);
-        const parseDiff = parseDiff(PRDiff);
+        const { diff, repoName } = await fetchPRDiff(pr_url, access_token);
+        const parseDifft = await parseDiff(diff);
 
-        const formattedDiff = formatForAI(parseDiff);
+        const formattedDifft = await formatForAI(parseDifft);
 
-        const comments = await reviewCode(formattedDiff);
+        const comments = await reviewCode(formattedDifft);
+
+        await client.query(
+          `
+          UPDATE reviews
+          SET diff_text = $1
+          WHERE id = $2
+          `,
+          [formattedDifft, reviewId],
+        );
+
+        await client.query(
+                    `
+            UPDATE reviews
+            SET review_summary = $1
+            WHERE id = $2
+            `,
+          [JSON.stringify(comments), reviewId],
+        );
 
         for (const comment of comments) {
-          await db.query(
+          await client.query(
             "INSERT INTO review_comments (review_id, file_name, line_number, category, severity, message) VALUES ($1,$2,$3,$4,$5,$6)",
             [
               reviewId,
@@ -53,13 +70,13 @@ router.post("/", requireAuth, async (req, res) => {
           );
         }
 
-        await db.query(
+        await client.query(
           "UPDATE reviews SET status=$1, repo_name=$2, completed_at=NOW() WHERE id=$3",
           ["completed", repoName, reviewId],
         );
       } catch (error) {
-        console.error("AI review failed:", err);
-        await db.query("UPDATE reviews SET status=$1 WHERE id=$2", [
+        console.error("AI review failed:", error);
+        await client.query("UPDATE reviews SET status=$1 WHERE id=$2", [
           "failed",
           reviewId,
         ]);
@@ -78,7 +95,7 @@ router.get("/", requireAuth, async (req, res) => {
   try {
     const result = await client.query(
       "SELECT * FROM reviews WHERE user_id = $1 ORDER BY created_at DESC",
-      [req.userId],
+      [req.user.sub],
     );
 
     res.json(result.rows);
@@ -96,7 +113,7 @@ router.get("/:id", requireAuth, async (req, res) => {
   try {
     const result = await client.query(
       "SELECT * FROM reviews WHERE user_id = $1 AND id = $2",
-      [req.userId, reviewId],
+      [req.user.sub, reviewId],
     );
 
     if (!result.rows.length)
@@ -117,7 +134,7 @@ router.get("/:id/comments", requireAuth, async (req, res) => {
   try {
     const response = await client.query(
       "SELECT * FROM reviews WHERE user_id = $1 AND id = $2",
-      [req.userId, reviewId],
+      [req.user.sub, reviewId],
     );
 
     if (!response.rows.length)
@@ -142,7 +159,7 @@ router.delete("/:id", requireAuth, async (req, res) => {
   const reviewId = req.params.id;
   try {
     await db.query(`DELECT FROM reviews WHERE user_id = $1 AND id = $2`, [
-      req.userId,
+      req.user.sub,
       reviewId,
     ]);
 

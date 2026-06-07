@@ -5,6 +5,7 @@ import cors from "cors";
 import express from "express";
 
 import authRoutes from "./routes/auth.js";
+import reviewsRoutes from "./routes/reviews.js";
 
 const app = express();
 
@@ -21,6 +22,8 @@ app.use(cors({
 }));
 
 app.use("/api/auth", authRoutes);
+app.use("/api/reviews", reviewsRoutes);
+
 
 async function startServer() {
   try {

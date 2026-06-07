@@ -33,7 +33,11 @@ function handleGitHubError(error) {
 }
 
 function parsePrUrl(prUrl) {
-  const match = prUrl.match(/github\.com\/([^\/]+)\/([^\/]+)\/pull\/(\d+)/);
+
+  const match = prUrl.match(
+    /(?:github\.com|api\.github\.com\/repos)\/([^\/]+)\/([^\/]+)\/pulls?\/(\d+)/,
+  );
+
 
   if (!match) throw new Error("Invalid GitHub PR URL");
 
@@ -48,6 +52,7 @@ async function fetchPRDiff(prUrl, accessToken) {
   try {
     const { owner, repo, prNumber } = parsePrUrl(prUrl);
 
+    // console.log("gitUrl =", gitUrl);
     const response = await axios.get(
       `${gitUrl}/repos/${owner}/${repo}/pulls/${prNumber}`,
       {
@@ -64,6 +69,10 @@ async function fetchPRDiff(prUrl, accessToken) {
     };
   } catch (error) {
     handleGitHubError(error);
+    // console.log("ERROR MESSAGE:", error.message);
+    // console.log("STATUS:", error.response?.status);
+    // console.log("DATA:", error.response?.data);
+    // console.log("CODE:", error.code);
   }
 }
 
@@ -88,4 +97,4 @@ async function getUserRepos(accessToken) {
   }
 }
 
-export {fetchPRDiff, getUserRepos};
+export { fetchPRDiff, getUserRepos };
