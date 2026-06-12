@@ -2,8 +2,13 @@ import ReviewForm from "../components/ReviewForm";
 
 function Home() {
     return (
-        <div>
-            <ReviewForm />
+        <div >
+            <h1>Welcome to PRReview.ai</h1>
+            <p>AI-powered GitHub Pull Request Reviews.</p>
+
+            <div>
+                <ReviewForm />
+            </div>
         </div>
     );
 }

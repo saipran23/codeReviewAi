@@ -10,7 +10,7 @@ const router = express.Router();
 router.post("/", requireAuth, async (req, res) => {
   const { pr_url } = req.body;
   // console.log(pr_url);
-  if (!pr_url) res.status(400).json({ error: "PR Url requried" });
+  if (!pr_url) return res.status(400).json({ error: "PR Url requried" });
 
   try {
     const result = await client.query(
@@ -36,7 +36,7 @@ router.post("/", requireAuth, async (req, res) => {
 
         const formattedDifft = await formatForAI(parseDifft);
 
-        const comments = await reviewCode(formattedDifft);
+        const review = await reviewCode(formattedDifft);
 
         await client.query(
           `
@@ -48,17 +48,32 @@ router.post("/", requireAuth, async (req, res) => {
         );
 
         await client.query(
-                    `
-            UPDATE reviews
-            SET review_summary = $1
-            WHERE id = $2
-            `,
-          [JSON.stringify(comments), reviewId],
+          `
+                UPDATE reviews
+                SET
+                    review_summary = $1,
+                    code_quality_score = $2,
+                    risk_level = $3,
+                    recommendation = $4
+                WHERE id = $5
+                `,
+          [
+            review.summary,
+            review.score,
+            review.risk,
+            review.recommendation,
+            reviewId,
+          ],
         );
 
-        for (const comment of comments) {
+        const reviewComments = review.comments || [];
+
+        for (const comment of reviewComments) {
           await client.query(
-            "INSERT INTO review_comments (review_id, file_name, line_number, category, severity, message) VALUES ($1,$2,$3,$4,$5,$6)",
+            `INSERT INTO review_comments
+             (review_id, file_name, line_number, category, severity, message,
+              why_it_matters, offending_code, suggested_fix)
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
             [
               reviewId,
               comment.file_name,
@@ -66,6 +81,9 @@ router.post("/", requireAuth, async (req, res) => {
               comment.category,
               comment.severity,
               comment.message,
+              comment.why_it_matters || null,
+              comment.offending_code || null,
+              comment.suggested_fix || null,
             ],
           );
         }
@@ -83,7 +101,7 @@ router.post("/", requireAuth, async (req, res) => {
       }
     });
   } catch (error) {
-    console.error(err);
+    console.error(error);
 
     res.status(500).json({
       error: "Failed to create review",
@@ -145,7 +163,7 @@ router.get("/:id/comments", requireAuth, async (req, res) => {
       [reviewId],
     );
 
-    res.json(result.rows[0]);
+    res.json(result.rows);
   } catch (error) {
     console.error(err);
 

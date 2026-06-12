@@ -33,18 +33,20 @@ function handleGitHubError(error) {
 }
 
 function parsePrUrl(prUrl) {
+  // const match = prUrl.match(
+  //   /(?:github\.com|api\.github\.com\/repos)\/([^\/]+)\/([^\/]+)\/pulls?\/(\d+)/,
+  // );
 
   const match = prUrl.match(
-    /(?:github\.com|api\.github\.com\/repos)\/([^\/]+)\/([^\/]+)\/pulls?\/(\d+)/,
+    /(?:github\.com\/|api\.github\.com\/repos\/)([^/]+)\/([^/]+)\/(?:pull|pulls)\/(\d+)/,
   );
-
 
   if (!match) throw new Error("Invalid GitHub PR URL");
 
   return {
     owner: match[1],
     repo: match[2],
-    prNumber: match[3],
+    prNumber: Number(match[3]),
   };
 }
 
@@ -79,7 +81,7 @@ async function fetchPRDiff(prUrl, accessToken) {
 async function getUserRepos(accessToken) {
   try {
     const response = await axios.get(`${gitUrl}/user/repos`, {
-      headers: getGitHubHeaders,
+      headers: getGitHubHeaders(accessToken),
 
       params: {
         sort: "updated",

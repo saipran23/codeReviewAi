@@ -23,23 +23,26 @@ function Navbar() {
 
 
     async function fetchUser() {
-        const token = localStorage.getItem("authToken");
+        try {
+            const response = await api.get("/api/auth/me");
 
-        const response = await api.get("/api/auth/me", {
-            headers: {
-                Authorization: `Bearer ${token}`,
-            },
-        });
-
-        setUser(response.data);
-        setIsLogin(true);
-        console.log(response.data);
+            setUser(response.data);
+            setIsLogin(true);
+        } catch (error) {
+            localStorage.removeItem("authToken");
+            setUser(null);
+            setIsLogin(false);
+        }
 
     }
 
 
     useEffect(() => {
-        fetchUser();
+        const token = localStorage.getItem("authToken");
+
+        if (token) {
+            fetchUser();
+        }
     }, []);
 
 
@@ -51,24 +54,22 @@ function Navbar() {
         }
     }
 
-    async function handleClick() {
+    function handleClick() {
 
         clearTimer();
+
         if (!isClicked) {
             timerRef.current = setTimeout(() => {
                 setIsVisible(false);
             }, 2500);
         }
-
-
     }
-
-    async function handleMouseEnter() {
+    function handleMouseEnter() {
         clearTimer();
         setIsVisible(true);
     }
 
-    async function handleMouseLeave() {
+    function handleMouseLeave() {
         clearTimer();
         if (!isClicked) {
             timerRef.current = setTimeout(() => {
@@ -83,20 +84,14 @@ function Navbar() {
     }, []);
 
 
-    function MyComponent() {
-        const location = useLocation();
-
-        const isLoginPage = location.pathname === "/login";
-    }
-
 
     async function handleLogout() {
         try {
-            await axios.post("/api/auth/logout", {}, {
-                withCredentials: true
-            });
+            localStorage.removeItem("authToken");
 
             setUser(null);
+            setIsLogin(false);
+
             navigate("/login");
         } catch (error) {
             console.error(error);

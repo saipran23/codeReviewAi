@@ -36,11 +36,11 @@ function ReviewForm() {
                         '/api/reviews/' + reviewId
                     );
 
-                    console.log(statusRes.data);
+                    // console.log(statusRes.data);
 
                     if (statusRes.data.status === 'completed') {
                         clearInterval(interval);
-                        // navigate('/review/' + reviewId);
+                        navigate('/review/' + reviewId);
                     }
                 } catch (err) {
                     console.log("Polling Error:", err);

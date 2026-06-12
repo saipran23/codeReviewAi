@@ -4,9 +4,8 @@ import "./Login.css";
 
 function Login() {
 
-    async function handleClick(){
-            window.location.href = "http://localhost:3000/api/auth/github";
-
+    function handleClick() {
+        window.location.href = "http://localhost:3000/api/auth/github";
     }
 
     return (
@@ -18,7 +17,7 @@ function Login() {
                     <h1>PRReview.ai</h1>
                 </div>
 
-                <h3 className="login-subtitle" oncl>
+                <h3 className="login-subtitle" >
                     Sign in to continue
                 </h3>
 
