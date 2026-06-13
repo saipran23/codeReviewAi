@@ -6,10 +6,12 @@ import express from "express";
 
 import authRoutes from "./routes/auth.js";
 import reviewsRoutes from "./routes/reviews.js";
+import errorHandler from "./middleware/errorHandler.js";
 
 const app = express();
 
 app.use(express.json());
+app.use(errorHandler);
 
 const PORT = process.env.PORT || 3000;
 

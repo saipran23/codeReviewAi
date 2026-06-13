@@ -10,8 +10,8 @@ function Home() {
             <div className="row justify-content-center">
                 <div className="col-lg-8">
 
-                    <div className="card bg-black text-light shadow-lg">
-                        <div className="card-body p-5 text-center">
+                    <div className="card bg-black text-light shadow-lg ">
+                        <div className="card-body p-5 text-center ">
 
                             <p className="text-uppercase text-secondary mb-2 fs-4">
                                 PRReview.ai

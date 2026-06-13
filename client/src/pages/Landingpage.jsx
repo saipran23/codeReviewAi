@@ -1,5 +1,7 @@
 import "bootstrap/dist/css/bootstrap.min.css";
 
+import { useNavigate } from "react-router-dom";
+
 const GITHUB_AUTH_URL = "http://localhost:3000/api/auth/github";
 
 const cardStyle = {
@@ -15,6 +17,7 @@ const stepBadgeStyle = {
 };
 
 export default function LandingPage() {
+  const navigate = useNavigate();
   function handleGitHubLogin() {
     window.location.href = GITHUB_AUTH_URL;
   }
@@ -22,7 +25,7 @@ export default function LandingPage() {
   return (
     <div className="bg-black text-white min-vh-100 mt-5">
       {/* Hero */}
-      <section className="container px-4 px-lg-5 py-5 py-lg-6 text-center" id="cta">
+      <section className="container min-vh-100 d-flex align-items-center align-self-center justify-content-center px-4 px-lg-5 py-5 py-lg-6 text-center" id="cta">
         <div className="mx-auto" style={{ maxWidth: 820 }}>
           <p
             className="text-uppercase small mb-4"

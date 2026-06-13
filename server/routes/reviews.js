@@ -12,6 +12,23 @@ router.post("/", requireAuth, async (req, res) => {
   // console.log(pr_url);
   if (!pr_url) return res.status(400).json({ error: "PR Url requried" });
 
+  const countResult = await client.query(
+    `SELECT COUNT(*) AS count
+     FROM reviews
+     WHERE user_id = $1
+     AND created_at >= date_trunc('month', NOW())`,
+    [req.user.sub]
+  );
+
+  const reviewCount = Number(countResult.rows[0].count);
+
+  if (reviewCount >= 5) {
+  
+    return res.status(429).json({
+      error: "Monthly limit reached. You can create 5 reviews per month on the free plan."
+    });
+  }
+
   try {
     const result = await client.query(
       "INSERT INTO reviews (user_id,pr_url, status) VALUES ($1, $2, $3) RETURNING id",
@@ -190,5 +207,6 @@ router.delete("/:id", requireAuth, async (req, res) => {
     });
   }
 });
+
 
 export default router;

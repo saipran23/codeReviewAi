@@ -161,7 +161,6 @@ router.get("/callback", async (req, res) => {
     const redirectUrl = new URL(getFrontendUrl());
     redirectUrl.searchParams.set("token", appToken);
 
-    console.log(appToken);
 
     console.log("Redirecting to:", redirectUrl.toString());
 

@@ -76,10 +76,8 @@ If no issues found:
     ],
     max_tokens: 2000,
   });
-  console.log(JSON.stringify(responcse, null, 2));
 
   const text = responcse.choices[0].message.content;
-  console.log(" = ", text);
   try {
     return JSON.parse(text);
   } catch {

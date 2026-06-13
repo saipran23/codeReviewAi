@@ -11,15 +11,6 @@ function ReviewForm() {
     const [status, setStatus] = useState("");
 
 
-    useEffect(() => {
-
-        async function isLogin() {
-
-
-
-        }
-
-    }, []);
 
 
 
@@ -70,12 +61,20 @@ function ReviewForm() {
             }, 3000);
         } catch (error) {
 
-            setStatus('error');
+            console.log("FULL ERROR:", error);
+            console.log("RESPONSE:", error.response);
+            console.log("DATA:", error.response?.data);
+
+            setStatus("error");
 
             setMessage(
-                error.response?.data?.error || 'Something went wrong'
+                error.response?.data?.error ||
+                error.message ||
+                "Something went wrong"
             );
 
+        } finally {
+            setLoading(false);
         }
 
 
