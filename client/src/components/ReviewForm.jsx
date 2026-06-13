@@ -1,6 +1,6 @@
 import api from '../services/api';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 function ReviewForm() {
@@ -10,12 +10,26 @@ function ReviewForm() {
     const [message, setMessage] = useState("");
     const [status, setStatus] = useState("");
 
+
+    useEffect(() => {
+
+        async function isLogin() {
+
+
+
+        }
+
+    }, []);
+
+
+
     const navigate = useNavigate();
 
     async function handleSubmit(e) {
 
         e.preventDefault();
         setStatus("loading");
+
 
         try {
 
@@ -68,22 +82,52 @@ function ReviewForm() {
     }
 
     return (
-        <div>
-            <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit}>
+            <div className="card bg-black border-secondary">
+                <div className="card-body">
 
-                <input
-                    type="text"
-                    placeholder="Paste GitHub PR URL"
-                    value={PrUrl}
-                    onChange={(e) => setPrUrl(e.target.value)}
-                />
+                    <label className="form-label text-secondary">
+                        GitHub pull request URL
+                    </label>
 
-                <button type="submit" disabled={loading}>
-                    {loading ? "Submitting..." : "Review PR"}
-                </button>
-                {message && <p>{message}</p>}
-            </form>
-        </div>
+                    <input
+                        type="text"
+                        className="form-control form-control-lg bg-dark text-light border-secondary"
+                        placeholder="https://github.com/owner/repo/pull/42"
+                        value={PrUrl}
+                        onChange={(e) => setPrUrl(e.target.value)}
+                    />
+
+                    <button
+                        type="submit"
+                        disabled={loading || PrUrl.length === 0}
+                        className="btn btn-outline-light w-100 mt-3"
+                    >
+                        {loading ? (
+                            <>
+                                <span
+                                    className="spinner-border spinner-border-sm me-2"
+                                ></span>
+                                Reviewing...
+                            </>
+                        ) : (
+                            "Review code"
+                        )}
+                    </button>
+
+                    {/* <p className="text-center text-secondary mt-3 mb-0">
+                        3 of 5 free reviews used this month
+                    </p> */}
+
+                    {message && (
+                        <div className="alert alert-info mt-3">
+                            {message}
+                        </div>
+                    )}
+
+                </div>
+            </div>
+        </form>
 
     );
 

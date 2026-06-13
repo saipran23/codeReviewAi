@@ -1,4 +1,5 @@
 import "./Login.css";
+import 'bootstrap/dist/css/bootstrap.min.css';
 
 
 
@@ -9,7 +10,7 @@ function Login() {
     }
 
     return (
-        <div className="login-container">
+        <div className="login-container bg-black">
             <div className="login-card">
 
                 <div className="login-brand">
@@ -29,7 +30,7 @@ function Login() {
                     Sign in with GitHub
                 </button>
 
-                <p className="login-note">
+                <p className="login-note bg-black">
                     No password needed — GitHub handles login
                 </p>
 

@@ -176,14 +176,14 @@ router.get("/:id/comments", requireAuth, async (req, res) => {
 router.delete("/:id", requireAuth, async (req, res) => {
   const reviewId = req.params.id;
   try {
-    await db.query(`DELECT FROM reviews WHERE user_id = $1 AND id = $2`, [
+    await client.query(`DELETE   FROM reviews WHERE user_id = $1 AND id = $2`, [
       req.user.sub,
       reviewId,
     ]);
 
     res.json({ message: "Deleted" });
   } catch (error) {
-    console.error(err);
+    console.error(error);
 
     res.status(500).json({
       error: `Failed to delete ${reviewId} review`,
