@@ -6,7 +6,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 function Login() {
 
     function handleClick() {
-        window.location.href = "http://localhost:3000/api/auth/github";
+        window.location.href = "https://codereviewai-3fbg.onrender.com/api/auth/github";
     }
 
     return (
